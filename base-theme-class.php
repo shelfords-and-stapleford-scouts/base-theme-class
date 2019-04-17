@@ -51,6 +51,11 @@
  * Domain Path: /lang
  */
 
+const EXTRA_SETUP = [
+  'date_picker' => [ 'default_value' => date('Ymd') ],
+  'image'       => [ 'save_format' => 'object', 'library' => 'all', 'preview_size' => 'large' ],
+];
+
 const FORM_FIELDS = [
   'Form Key'       => [ 'type' => 'text' ], // Code used to define call back which is made once form is submitted
   'To'             => [ 'type' => 'email', 'required' => 1 ],                                                         // Email address submission info is sent to
@@ -125,9 +130,11 @@ class BaseThemeClass {
   protected $debug;
   protected $array_methods;
   protected $scalar_methods;
+  protected $date_format;
 
   public function __construct( $defn ) {
     $this->defn = $defn;
+    $this->date_format = 'F jS Y';
     $this->initialize_templates()
          ->initialize_templates_directory()
          ->initialize_theme()
@@ -148,6 +155,11 @@ class BaseThemeClass {
          //->register_new_role()
          //->allow_authors_to_add_authors()
          ;
+  }
+
+  function set_date_format( $s ) {
+    $this->date_format = $s;
+    return $this;
   }
 
   function initialize_templates_directory() {
@@ -405,6 +417,9 @@ class BaseThemeClass {
     foreach( $fields as $field => $def ) {
       $code = isset( $def['code'] ) ? $def['code'] : $this->cr( $field ); // Auto generate code for field, along with name etc..
       $me = ['key'=>'field_'.$prefix.$code, 'label' => $field, 'name' => $code, 'layout' => 'row' ];
+      if( array_key_exists( $def['type'], EXTRA_SETUP ) ) {
+        $me = array_merge( $me, EXTRA_SETUP[ $def['type'] ] );
+      }
       if( is_array( $def ) ) {
         $me = array_merge( $me, $def );
       }
@@ -677,7 +692,7 @@ class BaseThemeClass {
     ];
     $this->scalar_methods = [
       'raw'       => function( $s ) { return $s; },
-      'date'      => function( $s ) { return $s ? date_format( date_create( $s ), 'F jS Y' ) : '-'; },
+      'date'      => function( $s ) { return $s ? date_format( date_create( $s ), $this->date_format ) : '-'; },
       'enc'       => 'rawurlencode',
       'rand_enc'  => function( $s ) { return $this->random_url_encode( $s ); },
       'integer'   => 'intval',
