@@ -133,10 +133,13 @@ class BaseThemeClass {
   protected $array_methods;
   protected $scalar_methods;
   protected $date_format;
+  protected $range_format;
 
   public function __construct( $defn ) {
     $this->defn = $defn;
     $this->date_format = 'F jS Y';
+    $this->range_format = [ [ 'F jS Y',' - F jS Y' ], [ 'F jS', ' - F jS Y' ], [ 'F jS', ' - jS Y' ], [ 'F jS Y', '' ] ];
+//  $this->range_format = [ [ 'j F Y', ' - j F Y'  ], [ 'j F',  ' - j F Y'  ], [ 'j',   ' - j F Y' ], [ 'j F Y',  '' ] ];
     $this->initialize_templates()
          ->initialize_templates_directory()
          ->initialize_theme()
@@ -162,6 +165,22 @@ class BaseThemeClass {
   function set_date_format( $s ) {
     $this->date_format = $s;
     return $this;
+  }
+
+  function set_range_format( $s ) {
+    $this->range_format = $s;
+    return $this;
+  }
+
+  function format_date_range( $start, $end ) {
+    $s = date_create($start);
+    $e = date_create($end);
+    $index = date_format($s,'Y') !== date_format($e,'Y') ? 0
+         : ( date_format($s,'m') !== date_format($e,'m') ? 1
+         : ( date_format($s,'d') !== date_format($e,'d') ? 2
+         :   3 ) );
+    return date_format($s,$this->range_format[$index][0]).
+           date_format($e,$this->range_format[$index][1]);
   }
 
   function initialize_templates_directory() {
@@ -884,7 +903,6 @@ class BaseThemeClass {
 
             list( $render_type, $variable, $extra ) = [ $match[1], $match[2], array_key_exists( 3, $match ) ? $match[3] : '' ];
 
-//error_log( "$template_code: $render_type - $variable -- $extra\n\n" );
             $t_data = $this->parse_variable( $variable, $extra, $data );
             if( array_key_exists( $render_type, $this->array_methods ) ) {
               return $this->array_methods[ $render_type ]( $t_data, $extra );
