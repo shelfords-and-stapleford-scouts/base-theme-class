@@ -52,7 +52,9 @@
  */
 
 const EXTRA_SETUP = [
-  'date_picker' => [ 'default_value' => date('Ymd') ],
+  'date_picker'      => [ 'return_value' => 'Y-m-d' ],
+  'date_time_picker' => [ 'return_value' => 'Y-m-d H:i:s' ],
+  'time_picker'      => [ 'return_value' => 'H:i:s' ],
   'image'       => [ 'save_format' => 'object', 'library' => 'all', 'preview_size' => 'large' ],
 ];
 
